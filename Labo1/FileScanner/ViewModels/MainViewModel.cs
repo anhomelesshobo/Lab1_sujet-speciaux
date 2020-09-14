@@ -85,12 +85,14 @@ namespace FileScanner.ViewModels
 
             Items = new ObservableCollection<FolderView>();
 
-            try
+
+            var FolderItems = await Task.Run(() => GetFolderAsync(dir));
+
+            if(FolderItems != null)
             {
-               
                 var FilesItems = await Task.Run(() => GetFileAsync(dir));
-                var FolderItems = await Task.Run(() => GetFolderAsync(dir)); ;
-                foreach(var file in FilesItems)
+
+                foreach (var file in FilesItems)
                 {
                     Items.Add(new FolderView() { TheItems = file, Image = "C:/Users/pierluc/Desktop/session/session_5/Développement sujet spéciaux/Labo1/Labo1/FileScanner/Images/file.png" });
                 }
@@ -98,12 +100,10 @@ namespace FileScanner.ViewModels
                 {
                     Items.Add(new FolderView() { TheItems = folder, Image = "C:/Users/pierluc/Desktop/session/session_5/Développement sujet spéciaux/Labo1/Labo1/FileScanner/Images/folder.png" });
                 }
+            }
+            
 
-            }
-            catch(SecurityException)
-            {
-                System.Windows.MessageBox.Show("You dont have the permission to acces this folder!: " + dir);
-            }
+           
            
             
             
@@ -116,22 +116,33 @@ namespace FileScanner.ViewModels
         {
             var Files = new List<string>();
 
-            foreach (var file in Directory.EnumerateFiles(dir, "*"))
-            {
-                 Files.Add(file);
-            }
+           
+                foreach (var file in Directory.EnumerateFiles(dir, "*"))
+                {
+                    Files.Add(file);
+                }
 
+                
+            
             return Files;
         }
 
         public List<string> GetFolderAsync(string dir)
         {
             var Folders = new List<string>();
-
-            foreach (var folder in  Directory.EnumerateDirectories(dir, "*"))
-            {                
-                Folders.Add(folder);
+            try
+            {
+                foreach (var folder in Directory.EnumerateDirectories(dir, "*"))
+                {
+                    Folders.Add(folder);
+                }
+            }          
+            catch (UnauthorizedAccessException)
+            {
+                System.Windows.MessageBox.Show("You dont have the permission to acces this folder!: " + dir);
+                Folders = null;
             }
+            
 
             return Folders;
         }
